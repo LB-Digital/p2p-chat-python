@@ -66,7 +66,7 @@ if __name__ == '__main__':
         except AddressExtractError as err_msg:
             sys.exit('Existing member ' + err_msg)
 
-    peer = Peer(coordinator)
+    peer = Peer(coordinator, username, (listen_ip, listen_port))
 
     start_server_thread(peer, listen_ip, listen_port)
 
@@ -75,16 +75,12 @@ if __name__ == '__main__':
         print('Connecting to existing members server...')
 
         try:
-            # peer.client_connected_to = (existing_ip, existing_port)
-            # peer.my_client = \
-            Client(peer, username, existing_ip, existing_port, listen_ip, listen_port)
+            Client(peer, existing_ip, existing_port)
         except ConnectionRefusedError:
             # failed to connect to existing member, so try become coordinator of own Server
             print(Style.warning('Failed to connect to existing member! \n'))
     else:
-        # peer.my_client = \
-        Client(peer, username, listen_ip, listen_port, listen_ip, listen_port)
-        # connected to self, so don't need to set peer.client_connected_to
+        Client(peer, listen_ip, listen_port)
 
     # either no existing member given, or failed to connect to existing member
     # so try to start server as coordinator

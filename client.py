@@ -4,8 +4,6 @@
 import socket
 import threading
 import sys
-import uuid
-import pickle
 import json
 
 # CUSTOM MODULE IMPORTS
@@ -19,16 +17,12 @@ HEADER_PART_LENGTH = 10
 
 # CLASS:Client
 class Client:
-    id = None
-    username = None
+    def __init__(self, peer: Peer, server_ip: str, server_port: int):
+        self.peer = peer
 
-    def __init__(self, peer: Peer, username: int, server_ip: str, server_port: int, listen_ip: str, listen_port: int):
-        self.username = username
-        self.id = str(uuid.uuid4())[:8]
+        self.__start(server_ip, server_port)
 
-        self.__start(peer, server_ip, server_port)
-
-    def __start(self, peer: Peer, server_ip: str, server_port: int):
+    def __start(self, server_ip: str, server_port: int):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -43,28 +37,24 @@ class Client:
         else:
             if message.get_body() == 'connected':
                 print('connected!')
-                peer.set_chat_coord((server_ip, server_port))
-                self.__on_connect(sock, peer)
+                self.peer.set_chat_coord((server_ip, server_port))
+                self.__on_connect(sock)
 
             else:
-                print('connection failed')
                 msg_subtype = message.get_body().split(':')[0]
                 msg_body_start = len(msg_subtype) + 1
                 if msg_subtype == 'coordinator':
-                    print('chat coordinator found')
                     chat_coord = message.get_body()[msg_body_start:]
                     coord_ip, coord_port = json.loads(chat_coord)
-                    print('closing this socket connection')
                     sock.close()
-                    print('attempting start with chat coord')
-                    self.__start(peer, coord_ip, coord_port)
+                    self.__start(coord_ip, coord_port)
                 else:
                     sys.exit('Unexpected server response on connection')
 
-    def __on_connect(self, sock, peer):
+    def __on_connect(self, sock: socket.socket):
         print('on connect')
         # start thread for receiving messages
-        receive_thread = threading.Thread(target=self.__start_receiving, args=(sock, peer))
+        receive_thread = threading.Thread(target=self.__start_receiving, args=(sock, ))
         receive_thread.daemon = True
         receive_thread.start()
 
@@ -73,7 +63,16 @@ class Client:
         input_thread.daemon = True
         input_thread.start()
 
-    def __start_receiving(self, sock: socket.socket, peer: Peer):
+        # when user first connects, auth them with server
+        auth_data = {
+            'username': self.peer.get_username(),
+            'server_addr': self.peer.get_server_addr()
+        }
+        msg_body = 'auth:' + json.dumps(auth_data)
+        message = Message(self.peer.get_id(), 'SYSTEM', msg_body)
+        sock.send(message.get_encoded())
+
+    def __start_receiving(self, sock: socket.socket):
         # continually receiving data
         while True:
             message = self.__receive_msg(sock)
@@ -82,26 +81,19 @@ class Client:
                 msg_subtype = message.get_body().split(':')[0]
                 msg_body_start = len(msg_subtype) + 1
                 msg_body = message.get_body()[msg_body_start:]
-                # if msg_subtype == 'servers':
-                #     # received servers
-                #     recvd_servers = json.loads(msg_body)
-                #     print('recvd_servers:')
-                #     print(recvd_servers)
-                #     print('------')
-                #     for server_addr in recvd_servers:
-                #         print('received server...', server_addr)
-                #         peer.server_listening_to.append(server_addr)
-                #         # listen to each server
-                #         ip, port = server_addr
-                #         port = int(port)
-                #         listen_thread = threading.Thread(target=self.listen, args=(ip, port))
-                #         listen_thread.daemon = True
-                #         listen_thread.start()
+
+                if msg_subtype == 'peers':
+                    # received updated peers list
+                    updated_peers = json.loads(msg_body)
+                    # save updated chat peers list
+                    self.peer.set_chat_peers(updated_peers)
 
             else:
                 # Style.clear()
                 # print('<USERNAME> ' + data.decode('utf-8'))
-                print('<USERNAME> ' + message.get_body())
+                msg_peer = self.peer.get_chat_peer(message.get_client_id())
+                msg_username = msg_peer['username']
+                print(f'<{Style.info(msg_username)}> ' + message.get_body())
 
     def __receive_msg(self, sock: socket.socket):
         # continually receiving data
@@ -118,53 +110,18 @@ class Client:
 
         return Message(msg_client_id, msg_type, msg_body)
 
-    def __send(self, sock):
-        # when user first connects, auth them with server
-        msg_body = 'username:' + self.username
-
-        # build header for system message to send ID to server
-        message = Message(self.id, 'SYSTEM', msg_body)
-        encoded_message = message.get_encoded()
-
-        sock.send(encoded_message)
-
+    def __send(self, sock: socket.socket):
         while True:
             msg_body = input()
             # Style.clear()
             print("\033[1A", end='')  # [\033[2K
 
             if msg_body:
-                message = Message(self.id, 'CHAT', msg_body)
+                message = Message(self.peer.get_id(), 'CHAT', msg_body)
                 encoded_message = message.get_encoded()
 
                 # send the message
                 sock.send(encoded_message)
-
-    # def listen(self, ip, port):
-    #     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    #
-    #     sock.connect((ip, port))
-    #
-    #     while True:
-    #         message_header = sock.recv(Message.header_length)
-    #
-    #         if not message_header:
-    #             print(Style.error('Listening server closed!'))
-    #             break
-    #
-    #         # extract 3 parts of header
-    #         msg_client_id, msg_type, msg_length = Message.decode_msg_header(message_header)
-    #         # receive message from server
-    #         msg_body = sock.recv(msg_length).decode('utf-8')
-    #
-    #         message = Message(msg_client_id, msg_type, msg_body)
-    #
-    #         if message.get_type() == 'CHAT':
-    #             # Style.clear()
-    #             # print('<USERNAME> ' + data.decode('utf-8'))
-    #             print('<USERNAME> ' + message.get_body())
-
 
 
 
