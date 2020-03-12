@@ -1,26 +1,21 @@
 
 
-# CONSTANTS
-HEADER_PART_LENGTH = 10
-
-
 # CLASS:Message
 class Message:
 
-    __client_id = None
-    __type = None
-    __length = None
-    __body = None
+    header_part_length = 10
+    header_length = header_part_length * 3
 
-    def __init__(self, msg_client_id, msg_type, msg_body):
+    def __init__(self, msg_client_id: str, msg_type: str, msg_body: str):
         self.__client_id = msg_client_id
         self.__type = msg_type
+        self.__length = len(msg_body)
         self.__body = msg_body
 
     def get_encoded(self):
-        header_id_part = self.__client_id.ljust(HEADER_PART_LENGTH)
-        header_type_part = self.__type.ljust(HEADER_PART_LENGTH)
-        header_length_part = str(len(self.__body)).ljust(HEADER_PART_LENGTH)
+        header_id_part = self.__client_id.ljust(self.header_part_length)
+        header_type_part = self.__type.ljust(self.header_part_length)
+        header_length_part = str(len(self.__body)).ljust(self.header_part_length)
 
         message_header = header_id_part + header_type_part + header_length_part
 
@@ -42,9 +37,9 @@ class Message:
     def decode_msg_header(msg_header):
         msg_header = msg_header.decode('utf-8')
 
-        header_id_part = msg_header[0:HEADER_PART_LENGTH]
-        header_type_part = msg_header[HEADER_PART_LENGTH:HEADER_PART_LENGTH*2]
-        header_length_part = msg_header[HEADER_PART_LENGTH*2:]
+        header_id_part = msg_header[0:Message.header_part_length]
+        header_type_part = msg_header[Message.header_part_length:Message.header_part_length*2]
+        header_length_part = msg_header[Message.header_part_length*2:Message.header_length]
 
         # parse client id from header
         msg_client_id = header_id_part.strip()
