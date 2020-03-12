@@ -18,7 +18,7 @@ from style import Style
 
 def start_server_thread(peer: Peer, ip: str, port: int):
     server_thread = threading.Thread(target=start_server, args=(peer, ip, port))
-    server_thread.daemon = True
+    # server_thread.daemon = True
     server_thread.start()
 
 
@@ -55,15 +55,18 @@ if __name__ == '__main__':
     except AddressExtractError as err_msg:
         sys.exit('Listening server ' + err_msg)
 
+    coordinator = True
+
     # they may have provided an existing members IP:Port to connect too
     if len(sys.argv) == 4:
         # existing member address given
         try:
             existing_ip, existing_port = extract_ip_port(sys.argv[3])
+            coordinator = False
         except AddressExtractError as err_msg:
             sys.exit('Existing member ' + err_msg)
 
-    peer = Peer()
+    peer = Peer(coordinator)
 
     start_server_thread(peer, listen_ip, listen_port)
 
@@ -72,14 +75,15 @@ if __name__ == '__main__':
         print('Connecting to existing members server...')
 
         try:
-            peer.client_connected_to = (existing_ip, existing_port)
-            peer.my_client = Client(peer, username, existing_ip, existing_port, listen_ip, listen_port)
+            # peer.client_connected_to = (existing_ip, existing_port)
+            # peer.my_client = \
+            Client(peer, username, existing_ip, existing_port, listen_ip, listen_port)
         except ConnectionRefusedError:
             # failed to connect to existing member, so try become coordinator of own Server
             print(Style.warning('Failed to connect to existing member! \n'))
     else:
-        peer.is_coordinator = True
-        peer.my_client = Client(peer, username, listen_ip, listen_port, listen_ip, listen_port)
+        # peer.my_client = \
+        Client(peer, username, listen_ip, listen_port, listen_ip, listen_port)
         # connected to self, so don't need to set peer.client_connected_to
 
     # either no existing member given, or failed to connect to existing member

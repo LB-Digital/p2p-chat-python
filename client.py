@@ -26,41 +26,57 @@ class Client:
         self.username = username
         self.id = str(uuid.uuid4())[:8]
 
+        self.__start(peer, server_ip, server_port)
+
+    def __start(self, peer: Peer, server_ip: str, server_port: int):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         sock.connect((server_ip, server_port))
 
-        # start thread for sending messages
-        input_thread = threading.Thread(target=self.__send, args=(sock, ))
-        # input_thread.daemon = True
-        input_thread.start()
+        # first message sent back from server is a SYS msg of either...
+        # "connected" - connection succeeded
+        # "coordinator:<coord addr>" - server not coordinator
+        message = self.__receive_msg(sock)
+        if message.get_type() != 'SYSTEM':
+            sys.exit('Unexpected server response on connection')
+        else:
+            if message.get_body() == 'connected':
+                print('connected!')
+                peer.set_chat_coord((server_ip, server_port))
+                self.__on_connect(sock, peer)
 
+            else:
+                print('connection failed')
+                msg_subtype = message.get_body().split(':')[0]
+                msg_body_start = len(msg_subtype) + 1
+                if msg_subtype == 'coordinator':
+                    print('chat coordinator found')
+                    chat_coord = message.get_body()[msg_body_start:]
+                    coord_ip, coord_port = json.loads(chat_coord)
+                    print('closing this socket connection')
+                    sock.close()
+                    print('attempting start with chat coord')
+                    self.__start(peer, coord_ip, coord_port)
+                else:
+                    sys.exit('Unexpected server response on connection')
+
+    def __on_connect(self, sock, peer):
+        print('on connect')
         # start thread for receiving messages
-        receive_thread = threading.Thread(target=self.__receive, args=(sock, peer))
-        # receive_thread.daemon = True
+        receive_thread = threading.Thread(target=self.__start_receiving, args=(sock, peer))
+        receive_thread.daemon = True
         receive_thread.start()
 
-        # client tells server which addr it's listening too on connect
-        # msg_body = 'listeningOn:' + json.dumps((listen_ip, listen_port))
-        # message = Message('', 'SYSTEM', msg_body)
-        # sock.send(message.get_encoded())
+        # start thread for sending messages
+        input_thread = threading.Thread(target=self.__send, args=(sock, ))
+        input_thread.daemon = True
+        input_thread.start()
 
-    def __receive(self, sock: socket.socket, peer: Peer):
+    def __start_receiving(self, sock: socket.socket, peer: Peer):
         # continually receiving data
         while True:
-            message_header = sock.recv(Message.header_length)
-
-            if not message_header:
-                print(Style.error('Server closed!'))
-                sys.exit()
-
-            # extract 3 parts of header
-            msg_client_id, msg_type, msg_length = Message.decode_msg_header(message_header)
-            # receive message from server
-            msg_body = sock.recv(msg_length).decode('utf-8')
-
-            message = Message(msg_client_id, msg_type, msg_body)
+            message = self.__receive_msg(sock)
 
             if message.get_type() == 'SYSTEM':
                 msg_subtype = message.get_body().split(':')[0]
@@ -87,6 +103,21 @@ class Client:
                 # print('<USERNAME> ' + data.decode('utf-8'))
                 print('<USERNAME> ' + message.get_body())
 
+    def __receive_msg(self, sock: socket.socket):
+        # continually receiving data
+        message_header = sock.recv(Message.header_length)
+
+        if not message_header:
+            print(Style.error('Server closed!'))
+            sys.exit()
+
+        # extract 3 parts of header
+        msg_client_id, msg_type, msg_length = Message.decode_msg_header(message_header)
+        # receive message from server
+        msg_body = sock.recv(msg_length).decode('utf-8')
+
+        return Message(msg_client_id, msg_type, msg_body)
+
     def __send(self, sock):
         # when user first connects, auth them with server
         msg_body = 'username:' + self.username
@@ -109,33 +140,30 @@ class Client:
                 # send the message
                 sock.send(encoded_message)
 
-    def send_msg(self, msg):
-        print('sending message: ' + msg)
-
-    def listen(self, ip, port):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-        sock.connect((ip, port))
-
-        while True:
-            message_header = sock.recv(Message.header_length)
-
-            if not message_header:
-                print(Style.error('Listening server closed!'))
-                break
-
-            # extract 3 parts of header
-            msg_client_id, msg_type, msg_length = Message.decode_msg_header(message_header)
-            # receive message from server
-            msg_body = sock.recv(msg_length).decode('utf-8')
-
-            message = Message(msg_client_id, msg_type, msg_body)
-
-            if message.get_type() == 'CHAT':
-                # Style.clear()
-                # print('<USERNAME> ' + data.decode('utf-8'))
-                print('<USERNAME> ' + message.get_body())
+    # def listen(self, ip, port):
+    #     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    #
+    #     sock.connect((ip, port))
+    #
+    #     while True:
+    #         message_header = sock.recv(Message.header_length)
+    #
+    #         if not message_header:
+    #             print(Style.error('Listening server closed!'))
+    #             break
+    #
+    #         # extract 3 parts of header
+    #         msg_client_id, msg_type, msg_length = Message.decode_msg_header(message_header)
+    #         # receive message from server
+    #         msg_body = sock.recv(msg_length).decode('utf-8')
+    #
+    #         message = Message(msg_client_id, msg_type, msg_body)
+    #
+    #         if message.get_type() == 'CHAT':
+    #             # Style.clear()
+    #             # print('<USERNAME> ' + data.decode('utf-8'))
+    #             print('<USERNAME> ' + message.get_body())
 
 
 

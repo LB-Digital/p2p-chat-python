@@ -14,6 +14,8 @@ class Peer:
     # users = []
     # connections = []
 
+    __chat_coord_addr = None
+
     is_coordinator = False
 
     my_server = None
@@ -23,6 +25,15 @@ class Peer:
     client_connected_to = None
     server_listening_to = []
     connected_to_me = []
+
+    def __init__(self, is_coordinator):
+        self.is_coordinator = is_coordinator
+
+    def set_chat_coord(self, coord_addr):
+        self.__chat_coord_addr = coord_addr
+
+    def get_chat_coord(self):
+        return self.__chat_coord_addr
 
     # def new_client_connected(self, client_addr):
     #     pass

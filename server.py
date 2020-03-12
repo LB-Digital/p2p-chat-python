@@ -37,12 +37,26 @@ class Server:
             client_socket, client_addr = sock.accept()
 
             print(Style.info(f'A new peer [{client_addr[0]}:{client_addr[1]}] connected via your server'))
-            self.connections.append(client_socket)
-            # peers.add_connection(client_socket)
 
-            client_thread = threading.Thread(target=self.receive, args=(client_socket, peer))
-            client_thread.daemon = True
-            client_thread.start()
+            if peer.is_coordinator:
+                self.connections.append(client_socket)
+
+                # tell peer connection succeeded
+                msg_body = 'connected'
+                message = Message('', 'SYSTEM', msg_body)
+                client_socket.send(message.get_encoded())
+
+                # peer is coordinator, so start receiving messages from them on this server
+                client_thread = threading.Thread(target=self.receive, args=(client_socket, peer))
+                client_thread.daemon = True
+                client_thread.start()
+            else:
+                # this server isn't coordinator, so
+                # tell peer coordinator address to connect too
+                msg_body = 'coordinator:' + json.dumps(peer.get_chat_coord())
+                message = Message('', 'SYSTEM', msg_body)
+                client_socket.send(message.get_encoded())
+
 
             # server lists all the addresses it's currently listening too
             # print(f'Currently listening too: ', peer.server_listening_to)
@@ -98,9 +112,6 @@ class Server:
                 # msg_username = Style.info(self.peers[msg_client_id]["username"])
                 # out_message = f'<{msg_username}> {message}'
                 encoded_msg = message.get_encoded()
-                # formatted_msg = message.get_formatted()
-                if not peer.is_coordinator:
-                    print('<USERNAME>> ' + message.get_body())
 
                 # print('outing msg to connections...', self.connections)
                 # print('outing msg to connections...')
