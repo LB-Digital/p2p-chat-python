@@ -43,7 +43,8 @@ class Peer:
         self.__chat_peers[peer_id] = {
             'username': peer_data['username'],
             'server_addr': peer_data['server_addr'],
-            'last_successful_ping': now
+            'last_successful_ping': now,
+            'joined_at': now
         }
 
     def remove_chat_peer(self, peer_id: str):
@@ -81,6 +82,7 @@ class Peer:
         peers_usernames = []
         for peer_id, peer_data in self.__chat_peers.items():
             peers_usernames.append(peer_data['username'])
+            peers_usernames.append(str(peer_data['joined_at']))
 
         return ', '.join(peers_usernames)
 
