@@ -1,19 +1,20 @@
-# IMPORTS
+
+
+# MODULE IMPORTS
 import sys
 import socket
 import threading
 import warnings
 import time
+import random
 
-# IMPORT CUSTOM MODULES
+# CUSTOM MODULE IMPORTS
 # used 'from ... import ...' statements to import directly into current namespace
 from extract_ip_port import extract_ip_port, AddressExtractError
 from client import Client
 from server import Server
 from peer import Peer
 from style import Style
-
-# CONSTANTS
 
 
 def start_server_thread(ip: str, port: int):
@@ -107,7 +108,7 @@ if __name__ == '__main__':
         while True:
             if not peer.connected:
                 peer.connected = True
-                print('connecting...')
+                print(Style.error('Coordinator disconnected, finding new coordinator...'))
 
                 chat_peers = peer.get_chat_peers()
 
@@ -120,17 +121,34 @@ if __name__ == '__main__':
                         elif peer_data['joined_at'] < chat_peers[earliest_join_id]['joined_at']:
                             earliest_join_id = peer_id
 
-                if earliest_join_id:
-                    earliest_join_peer = chat_peers[earliest_join_id]
-                    new_server_ip, new_server_port = earliest_join_peer['server_addr']
-                else:
-                    new_server_ip, new_server_port = peer.get_server_addr()
+                # if earliest_join_id:
+                # found new peer to be coordinator
+                earliest_join_peer = chat_peers[earliest_join_id]
+                new_server_ip, new_server_port = earliest_join_peer['server_addr']
+                print(Style.info(f'Attempting to make {earliest_join_peer["username"]} the new chat coordinator'))
+                # else:
+                #     # this peer becomes coordinator
+                #     print(Style.info('Attempting to make you the new chat coordinator...'))
+                #     new_server_ip, new_server_port = peer.get_server_addr()
 
                 peer.set_chat_coord(new_server_ip, new_server_port)
                 peer.set_chat_peers({})
 
 
-                client = Client(peer, new_server_ip, new_server_port)
+                for retries in range(5):
+                    # random delay so less chance of all members trying connection at same time
+                    rand_delay = random.uniform(0.0, 5.0)
+                    time.sleep(rand_delay)
+
+                    try:
+                        client = Client(peer, new_server_ip, new_server_port)
+                        break
+                    except ConnectionRefusedError:
+                        print(Style.warning(f'Failed to connect to new server, retries: {retries}'))
+                        # likely failed
+                        continue
+
+            time.sleep(0.1)
 
     except KeyboardInterrupt:
         sys.exit()

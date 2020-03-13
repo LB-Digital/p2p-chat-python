@@ -86,9 +86,6 @@ class Client:
 
                 self.sock.close()
 
-                # server closed
-                print(Style.error('Server closed!'))
-
                 # receiving thread isn't daemon, so once this loop is broken, program will exit
                 break
 
