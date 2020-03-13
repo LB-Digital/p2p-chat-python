@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="affa717d-cef5-4908-97e5-fe19a453966d" name="Default" comment="pre-centralization">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/chat.py" afterPath="$PROJECT_DIR$/chat.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/client.py" afterPath="$PROJECT_DIR$/client.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -43,10 +42,10 @@
       <file leaf-file-name="client.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="590">
-              <caret line="203" column="32" lean-forward="false" selection-start-line="203" selection-start-column="32" selection-end-line="203" selection-end-column="32" />
+            <state relative-caret-position="187">
+              <caret line="11" column="56" lean-forward="false" selection-start-line="11" selection-start-column="56" selection-end-line="11" selection-end-column="56" />
               <folding>
-                <element signature="e#19#32#0" expanded="true" />
+                <element signature="e#19#67#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -55,7 +54,7 @@
       <file leaf-file-name="server.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-459">
+            <state relative-caret-position="68">
               <caret line="4" column="13" lean-forward="false" selection-start-line="4" selection-start-column="7" selection-end-line="4" selection-end-column="13" />
               <folding />
             </state>
@@ -150,10 +149,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="640" />
-    <option name="y" value="23" />
-    <option name="width" value="1280" />
-    <option name="height" value="1057" />
+    <option name="x" value="1920" />
+    <option name="y" value="-484" />
+    <option name="width" value="1080" />
+    <option name="height" value="1897" />
   </component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -395,17 +394,17 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="640" y="23" width="1280" height="1057" extended-state="0" />
+    <frame x="1920" y="-484" width="1080" height="1897" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.12470215" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14825307" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2437673" sideWeight="0.50708216" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32963988" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32918918" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32918918" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13056995" sideWeight="0.49291784" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.06980609" sideWeight="0.49291784" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -443,7 +442,7 @@
         <state relative-caret-position="731">
           <caret line="51" column="33" lean-forward="false" selection-start-line="51" selection-start-column="33" selection-end-line="51" selection-end-column="33" />
           <folding>
-            <element signature="e#19#32#0" expanded="true" />
+            <element signature="e#19#67#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -561,7 +560,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-459">
+        <state relative-caret-position="68">
           <caret line="4" column="13" lean-forward="false" selection-start-line="4" selection-start-column="7" selection-end-line="4" selection-end-column="13" />
           <folding />
         </state>
@@ -569,10 +568,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="590">
-          <caret line="203" column="32" lean-forward="false" selection-start-line="203" selection-start-column="32" selection-end-line="203" selection-end-column="32" />
+        <state relative-caret-position="187">
+          <caret line="11" column="56" lean-forward="false" selection-start-line="11" selection-start-column="56" selection-end-line="11" selection-end-column="56" />
           <folding>
-            <element signature="e#19#32#0" expanded="true" />
+            <element signature="e#19#67#0" expanded="true" />
           </folding>
         </state>
       </provider>

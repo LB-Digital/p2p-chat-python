@@ -1,16 +1,15 @@
 
 
 # MODULE IMPORTS
-import socket
-import threading
-import sys
-import json
-import time
+import socket       # socket network connections
+import threading    # split script execution into multiple threads
+import sys          # system operations such as sys.exit() to exit the script
+import json         # parse/stringify JSON
 
 # CUSTOM MODULE IMPORTS
-from message import Message
-from peer import Peer
-from style import Style
+from message import Message     # processing system & chat messages
+from peer import Peer           # the apps peer
+from style import Style         # styling console prints
 
 
 class Client:
