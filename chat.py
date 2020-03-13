@@ -16,14 +16,28 @@ from style import Style
 # CONSTANTS
 
 
-def start_server_thread(peer: Peer, ip: str, port: int):
-    server_thread = threading.Thread(target=start_server, args=(peer, ip, port))
+def start_server_thread(ip: str, port: int):
+    server_thread = threading.Thread(target=start_server, args=(ip, port))
     server_thread.daemon = True
     server_thread.start()
 
 
-def start_server(peer: Peer, ip: str, port: int):
+def start_server(ip: str, port: int):
     peer.my_server = Server(peer, ip, port)
+
+
+def start_input_thread():
+    input_thread = threading.Thread(target=client_input)
+    input_thread.daemon = True
+    input_thread.start()
+
+
+def client_input():
+    while True:
+        msg = input('')
+
+        if peer.connected:
+            client.send(msg)
 
 
 if __name__ == '__main__':
@@ -68,23 +82,55 @@ if __name__ == '__main__':
 
     peer = Peer(coordinator, username, (listen_ip, listen_port))
 
-    start_server_thread(peer, listen_ip, listen_port)
+    start_server_thread(listen_ip, listen_port)
+
+    start_input_thread()
 
     if existing_ip and existing_port:
         # existing member address given, so attempt to connect to their server
         print('Connecting to existing members server...')
 
         try:
-            Client(peer, existing_ip, existing_port)
+            client = Client(peer, existing_ip, existing_port)
+            peer.connected = True
         except ConnectionRefusedError:
             # failed to connect to existing member, so try become coordinator of own Server
             print(Style.warning('Failed to connect to existing member! \n'))
     else:
-        Client(peer, listen_ip, listen_port)
+        try:
+            client = Client(peer, listen_ip, listen_port)
+            peer.connected = True
+        except ConnectionRefusedError:
+            print(Style.error('Failed to connect to own server!'))
 
-    # either no existing member given, or failed to connect to existing member
-    # so try to start server as coordinator
+    try:
+        while True:
+            if not peer.connected:
+                peer.connected = True
+                print('connecting...')
+
+                chat_peers = peer.get_chat_peers()
+
+                earliest_join_id = None
+                for peer_id, peer_data in chat_peers.items():
+                    # loop peer isn't the old chat coordinator
+                    if not peer_data['is_coord']:
+                        if not earliest_join_id:
+                            earliest_join_id = peer_id
+                        elif peer_data['joined_at'] < chat_peers[earliest_join_id]['joined_at']:
+                            earliest_join_id = peer_id
+
+                if earliest_join_id:
+                    earliest_join_peer = chat_peers[earliest_join_id]
+                    new_server_ip, new_server_port = earliest_join_peer['server_addr']
+                else:
+                    new_server_ip, new_server_port = peer.get_server_addr()
+
+                peer.set_chat_coord(new_server_ip, new_server_port)
+                peer.set_chat_peers({})
 
 
+                client = Client(peer, new_server_ip, new_server_port)
 
-
+    except KeyboardInterrupt:
+        sys.exit()

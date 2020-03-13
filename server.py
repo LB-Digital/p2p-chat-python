@@ -39,6 +39,7 @@ class Server:
             # print(Style.info(f'A new peer [{client_addr[0]}:{client_addr[1]}] connected via your server'))
 
             if self.peer.is_coordinator():
+                # print('is coord')
                 self.connections.append(client_socket)
 
                 # tell peer connection succeeded
@@ -50,7 +51,14 @@ class Server:
                 client_thread = threading.Thread(target=self.receive, args=(client_socket, ))
                 client_thread.daemon = True
                 client_thread.start()
+
+                # ping & update peers
+                ping_thread = threading.Thread(target=self.__ping_peers)
+                ping_thread.daemon = True
+                ping_thread.start()
+                # self.__ping_peers()
             else:
+                # print('not coord')
                 # this server isn't coordinator, so
                 # tell peer coordinator address to connect too
                 msg_body = 'coordinator:' + json.dumps(self.peer.get_chat_coord())
@@ -63,12 +71,13 @@ class Server:
             # header has 3 parts (client id, message type, message length)
             message_header = client_sock.recv(Message.header_length)
 
-            # ignore message if no header
+            # if blank header, client has disconnected
             if not message_header:
                 self.connections.remove(client_sock)
 
                 # ping all peers to see who disconnected
                 ping_thread = threading.Thread(target=self.__ping_peers)
+                ping_thread.daemon = True
                 ping_thread.start()
                 break
 
@@ -104,7 +113,7 @@ class Server:
                                 self.peer.add_chat_peer(client_peer_id, client_peer_data)
 
                                 # inform all connected clients of this new peer
-                                self.__send_peers()
+                                # self.__send_peers()
 
                                 # broadcast join message
                                 msg_body = 'output:' + (
