@@ -6,14 +6,25 @@ import uuid
 import math
 import time
 
-# CUSTOM MODULES IMPORTS
-from message import Message
-from style import Style
-
 
 # CLASS:Peer
 class Peer:
+    __instance = None
+
+    @staticmethod
+    def get_instance():
+        """ static access method. """
+        if Peer.__instance is None:
+            Peer()
+        return Peer.__instance
+
     def __init__(self, is_coordinator: bool, username: str, server_addr: tuple):
+        """ Virtually private constructor. """
+        if Peer.__instance is not None:
+            raise Exception('This class cannot be instantiated again as it is a singleton!')
+        else:
+            Peer.__instance = self
+
         self.__is_coordinator = is_coordinator
         self.__username = username
         self.__server_addr = server_addr

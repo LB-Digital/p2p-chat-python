@@ -2,9 +2,7 @@
 
 # MODULE IMPORTS
 import sys
-import socket
 import threading
-import warnings
 import time
 import random
 
