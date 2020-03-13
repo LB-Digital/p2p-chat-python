@@ -17,11 +17,11 @@ class Client:
     Client class for peers client.
     Connects to the given server and handles client related tasks.
 
-    :param Peer peer: global peer object
+    :param Peer peer: global peer instance
     :param str server_ip: server ip for client to connect too
     :param int server_port: server port for client to connect too
 
-    :return Client client: instance of this Client class
+    :return Client: instance of this Client class
     """
     def __init__(self, peer: Peer, server_ip: str, server_port: int):
         # store the peer to this instance so it can be accessed throughout the clients methods
