@@ -17,16 +17,19 @@ from peer import Peer
 from style import Style
 
 
+# utility function to start a thread for the server.  Run once
 def start_server_thread(ip: str, port: int):
     server_thread = threading.Thread(target=start_server, args=(ip, port))
     server_thread.daemon = True
     server_thread.start()
 
 
+# start the clients listening server.  Connects members if peer is coord, redirects them otherwise
 def start_server(ip: str, port: int):
-    peer.my_server = Server(peer, ip, port)
+    Server(peer, ip, port)
 
 
+# thread for listening to input
 def start_input_thread():
     input_thread = threading.Thread(target=client_input)
     input_thread.daemon = True
@@ -121,15 +124,15 @@ if __name__ == '__main__':
                         elif peer_data['joined_at'] < chat_peers[earliest_join_id]['joined_at']:
                             earliest_join_id = peer_id
 
-                # if earliest_join_id:
-                # found new peer to be coordinator
-                earliest_join_peer = chat_peers[earliest_join_id]
-                new_server_ip, new_server_port = earliest_join_peer['server_addr']
-                print(Style.info(f'Attempting to make {earliest_join_peer["username"]} the new chat coordinator'))
-                # else:
-                #     # this peer becomes coordinator
-                #     print(Style.info('Attempting to make you the new chat coordinator...'))
-                #     new_server_ip, new_server_port = peer.get_server_addr()
+                if earliest_join_id:
+                    # found new peer to be coordinator
+                    earliest_join_peer = chat_peers[earliest_join_id]
+                    new_server_ip, new_server_port = earliest_join_peer['server_addr']
+                    print(Style.info(f'Attempting to make {earliest_join_peer["username"]} the new chat coordinator'))
+                else:
+                    # no other peers to be coord, make own server coord
+                    print(Style.info('Attempting to make you the new chat coordinator...'))
+                    new_server_ip, new_server_port = peer.get_server_addr()
 
                 peer.set_chat_coord(new_server_ip, new_server_port)
                 peer.set_chat_peers({})
