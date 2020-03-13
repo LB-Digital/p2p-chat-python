@@ -45,8 +45,12 @@ class Message:
         msg_client_id = header_id_part.strip()
         # parse message type from header
         msg_type = header_type_part.strip()
-        # parse message length from header
-        msg_length = int(header_length_part)
+        # parsing as int could fail, so catch error and return 0 msg length on error
+        try:
+            # parse message length from header
+            msg_length = int(header_length_part)
+        except ValueError:
+            msg_length = 0
 
         return msg_client_id, msg_type, msg_length
 

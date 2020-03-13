@@ -18,7 +18,7 @@ from style import Style
 
 def start_server_thread(peer: Peer, ip: str, port: int):
     server_thread = threading.Thread(target=start_server, args=(peer, ip, port))
-    # server_thread.daemon = True
+    server_thread.daemon = True
     server_thread.start()
 
 

@@ -5,6 +5,7 @@ import socket
 import threading
 import sys
 import json
+import time
 
 # CUSTOM MODULE IMPORTS
 from message import Message
@@ -36,7 +37,6 @@ class Client:
             sys.exit('Unexpected server response on connection')
         else:
             if message.get_body() == 'connected':
-                print('connected!')
                 self.peer.set_chat_coord((server_ip, server_port))
                 self.__on_connect(sock)
 
@@ -52,10 +52,9 @@ class Client:
                     sys.exit('Unexpected server response on connection')
 
     def __on_connect(self, sock: socket.socket):
-        print('on connect')
         # start thread for receiving messages
         receive_thread = threading.Thread(target=self.__start_receiving, args=(sock, ))
-        receive_thread.daemon = True
+        # receive_thread.daemon = True
         receive_thread.start()
 
         # start thread for sending messages
@@ -77,16 +76,31 @@ class Client:
         while True:
             message = self.__receive_msg(sock)
 
-            if message.get_type() == 'SYSTEM':
-                msg_subtype = message.get_body().split(':')[0]
-                msg_body_start = len(msg_subtype) + 1
-                msg_body = message.get_body()[msg_body_start:]
+            if message == False:
+                # server closed
+                print(Style.error('Server closed!'))
+                # receiving thread isn't daemon, so once this loop is broken, program will exit
+                break
 
-                if msg_subtype == 'peers':
-                    # received updated peers list
-                    updated_peers = json.loads(msg_body)
-                    # save updated chat peers list
-                    self.peer.set_chat_peers(updated_peers)
+            if message.get_type() == 'SYSTEM':
+                if message.get_body() == 'ping':
+                    # client has been pinged by server, pong back
+                    message = Message(self.peer.get_id(), 'SYSTEM', 'pong')
+                    sock.send(message.get_encoded())
+
+                else:
+                    msg_subtype = message.get_body().split(':')[0]
+                    msg_body_start = len(msg_subtype) + 1
+                    msg_body = message.get_body()[msg_body_start:]
+
+                    if msg_subtype == 'peers':
+                        # received updated peers list
+                        updated_peers = json.loads(msg_body)
+                        # save updated chat peers list
+                        self.peer.set_chat_peers(updated_peers)
+
+                    elif msg_subtype == 'output':
+                        print(msg_body)
 
             else:
                 # Style.clear()
@@ -100,8 +114,7 @@ class Client:
         message_header = sock.recv(Message.header_length)
 
         if not message_header:
-            print(Style.error('Server closed!'))
-            sys.exit()
+            return False
 
         # extract 3 parts of header
         msg_client_id, msg_type, msg_length = Message.decode_msg_header(message_header)

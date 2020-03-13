@@ -22,6 +22,10 @@ class Style:
         return '\033[31m' + txt + Style.END
 
     @staticmethod
+    def bright_green(txt):
+        return '\033[34m' + txt + Style.END
+
+    @staticmethod
     def clear():
         print('\x1b[2K\r', end='')
 
